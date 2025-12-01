@@ -18,15 +18,19 @@ coverage.*
 profile.cov
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
-go.work
-go.work.sum
+# Uncomment for better develop experience
+#go.work
+#go.work.sum
 
 # env file
 .env
+.venv/
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+
+__pycache__/
