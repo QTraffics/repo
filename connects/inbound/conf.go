@@ -1,7 +1,7 @@
-package outbound
+package inbound
 
 type Conf interface {
-	OutboundConf()
+	InBoundConf()
 
 	String() string
 }

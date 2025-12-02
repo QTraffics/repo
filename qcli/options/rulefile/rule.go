@@ -7,7 +7,7 @@ import (
 	"github.com/qtraffics/qnetwork/addrs"
 	"github.com/qtraffics/qtfra/ex"
 	"github.com/qtraffics/repo/connects/outbound"
-	"github.com/qtraffics/repo/connects/outbound/direct"
+	"github.com/qtraffics/repo/connects/outbound/directout"
 )
 
 const itemDelimiter = ","
@@ -58,7 +58,7 @@ func ParseRule(ruleString string) (Rule, error) {
 		case 3:
 			switch rule.OutboundType {
 			case outbound.TypeDirect, outbound.TypeNone:
-				conf, err := direct.NewConfString(field)
+				conf, err := directout.NewConfString(field)
 				if err != nil {
 					return Rule{}, errSyntax(err.Error())
 				}

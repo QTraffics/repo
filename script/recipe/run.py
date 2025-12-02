@@ -14,7 +14,7 @@ def command(cmdline: typing.List[str], capture_output: bool = False, **kwargs):
         stderr=subprocess.PIPE if capture_output else sys.stderr,
         shell=False,
         capture_output=False,  # We handle it manually
-        check=True,  # Raise error on non-zero exit
+        check=False,  # Raise error on non-zero exit
         **kwargs
     )
 
@@ -27,6 +27,6 @@ def command_shell(cmdline: str, capture_output: bool = False, **kwargs):
         stderr=subprocess.PIPE if capture_output else sys.stderr,
         shell=True,
         capture_output=False,  # Handled manually
-        check=True,  # Raise error on non-zero exit
+        check=False,  # Raise error on non-zero exit
         **kwargs
     )

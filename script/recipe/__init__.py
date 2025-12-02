@@ -5,7 +5,7 @@ def configure_logger():
 
     log_handler = logging.StreamHandler(sys.stdout)
 
-    log_formatter = logging.Formatter("[%(levelname)s] [%(asctime)s] (%(module)s:%(funcName)s) (%(name)s) %(message)s")
+    log_formatter = logging.Formatter("[SCRIPT] [%(levelname)s] [%(asctime)s] (%(module)s:%(funcName)s) (%(name)s) %(message)s")
 
     log_handler.setLevel(logging.INFO)
     log_handler.setFormatter(log_formatter)

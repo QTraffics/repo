@@ -3,11 +3,13 @@ package outbound
 import (
 	"context"
 	"net"
+
+	"github.com/qtraffics/qnetwork/meta"
+	"github.com/qtraffics/qtfra/services"
 )
 
 type Outbound interface {
-	Connect(ctx context.Context) (net.Conn, error)
-	ConnectPacket(ctx context.Context) (net.PacketConn, error)
+	services.LifeCycle
 
-	Close() error
+	Connect(ctx context.Context, network meta.Network) (net.Conn, error)
 }

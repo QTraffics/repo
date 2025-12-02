@@ -39,7 +39,7 @@ def main():
 
     lm = GOLintManager(config=config_file,go_modules=modules,lint_command=command)
     for do in sys.argv[1:]:
-        logger.info(f"found action : {do}")
+        logger.info(f"found action: {do}")
         match do.lower():
             case "lint":
                 lm.lint()
