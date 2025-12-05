@@ -3,7 +3,9 @@ package qcli
 import (
 	"os"
 	"path/filepath"
+	"sort"
 
+	"github.com/qtraffics/qtfra/enhancements/slicelib"
 	"github.com/qtraffics/qtfra/ex"
 	"github.com/qtraffics/qtfra/log"
 	"github.com/qtraffics/repo/qcli/options"
@@ -44,12 +46,18 @@ func readConfigAndMerge(ConfigFileDir string) (options.Option, error) {
 	if err != nil {
 		return root, ex.Cause(err, "ReadDir")
 	}
-	for _, file := range dir {
-		if file.IsDir() ||
-			(filepath.Ext(file.Name()) != ".yaml" && filepath.Ext(file.Name()) != ".yml") {
+	fileToRead := slicelib.Map(dir, func(it os.DirEntry) string {
+		if it.IsDir() || (filepath.Ext(it.Name()) != ".yaml" && filepath.Ext(it.Name()) != ".yml") {
+			return ""
+		}
+		return it.Name()
+	})
+	sort.Strings(fileToRead)
+	for _, file := range fileToRead {
+		if file == "" {
 			continue
 		}
-		option, err := readConfig(file.Name())
+		option, err := readConfig(file)
 		if err != nil {
 			return options.Option{}, err
 		}

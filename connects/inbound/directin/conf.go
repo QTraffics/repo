@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"net"
 	"net/netip"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/qtraffics/qnetwork/addrs"
 	"github.com/qtraffics/qnetwork/meta"
 	"github.com/qtraffics/qtfra/ex"
+	"github.com/qtraffics/repo/connects/inbound"
+	"github.com/qtraffics/repo/connects/internal/common/stringconf"
 )
 
 type Conf struct {
@@ -44,19 +45,16 @@ func NewConfFromString(confString string) (*Conf, error) {
 		c.Network = meta.ProtocolList{meta.ProtocolTCP, meta.ProtocolUDP}
 	}
 
-	fields := slices.DeleteFunc(strings.Split(confString, ","), func(s string) bool {
-		return len(s) == 0
-	})
-
+	fields := stringconf.Fields{Raw: confString}
 	// listen
-	listen := fields[0]
+	listen := fields.PickNext()
 	if strings.Contains(listen, ":") {
 		host, port, err := net.SplitHostPort(listen)
 		if err != nil {
 			return nil, ex.Cause(err, "SplitHostPort")
 		}
-		err = ex.Errors(c.pHost(host), c.pPort(port))
-		if err != nil {
+
+		if err = ex.Errors(c.applyHost(host), c.applyPort(port)); err != nil {
 			return nil, err
 		}
 	} else if port, err := strconv.ParseUint(listen, 10, 16); err == nil {
@@ -65,35 +63,31 @@ func NewConfFromString(confString string) (*Conf, error) {
 		return nil, ex.New("wrong listen config: ", listen)
 	}
 
-	fields = fields[1:]
-	for _, f := range fields {
-		var err error
-		if idx := strings.Index(f, "="); idx >= 0 {
-			err = c.pExtra(f[:idx], f[idx+1:])
-		} else {
-			err = c.pExtra(f, "")
-		}
-		if err != nil {
+	for k, v := range fields.IterKV() {
+		if err := c.applyExtra(k, v); err != nil {
 			return nil, ex.Cause(err, "extra")
 		}
 	}
 	return c, nil
 }
 
-func (c *Conf) pExtra(k, v string) error {
+func (c *Conf) applyExtra(k, v string) error {
 	switch strings.ToLower(k) {
 	case "tfo":
 		c.EnableTFO = true
+	case "udp_fragment":
+		c.EnableUDPFrag = true
+	case "reuseaddr":
+		c.ReuseAddr = true
 	default:
 		return ex.New("unknown configuration: ", k+"="+v)
 	}
 	return nil
 }
 
-func (c *Conf) pHost(host string) error {
+func (c *Conf) applyHost(host string) error {
 	if host == "" {
-		c.BindAddress4 = netip.IPv4Unspecified()
-		c.BindAddress6 = netip.IPv6Unspecified()
+		c.BindAddress = ""
 	} else if _, err := net.InterfaceByName(host); err == nil {
 		c.BindInterface = host
 	} else if addr, err := netip.ParseAddr(host); err == nil && addr.IsValid() {
@@ -111,7 +105,7 @@ func (c *Conf) pHost(host string) error {
 	return nil
 }
 
-func (c *Conf) pPort(port string) error {
+func (c *Conf) applyPort(port string) error {
 	if numPort, err := strconv.ParseUint(port, 10, 16); err == nil {
 		c.Port = uint16(numPort)
 	} else if len(c.Network) == 1 {
@@ -127,7 +121,9 @@ func (c *Conf) pPort(port string) error {
 	return nil
 }
 
-func (c *Conf) InBoundConf() {}
+func (c *Conf) Type() inbound.Type {
+	return inbound.TypeDirect
+}
 
 func (c *Conf) String() string {
 	return fmt.Sprint(*c)

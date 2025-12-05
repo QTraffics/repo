@@ -2,23 +2,21 @@ package outbound
 
 import "strings"
 
-type DialType string
+type Type string
 
 const (
-	TypeNone DialType = ""
-
-	TypeDirect       DialType = "direct"
-	TypeLoadBalance  DialType = "loadbalance"
-	TypeFallback     DialType = "fallback"
-	TypeLatencyFirst DialType = "latency-first"
+	TypeDirect       Type = "direct"
+	TypeLoadBalance  Type = "loadbalance"
+	TypeFallback     Type = "fallback"
+	TypeLatencyFirst Type = "latency-first"
 )
 
-func ParseDialType(s string) DialType {
-	x := DialType(strings.ToLower(s))
+func ParseTypeString(s string) Type {
+	x := Type(strings.ToLower(s))
 	switch x {
-	case TypeDirect, TypeLoadBalance, TypeFallback, TypeLatencyFirst, TypeNone:
+	case TypeDirect, TypeLoadBalance, TypeFallback, TypeLatencyFirst:
 		return x
 	default:
-		return TypeNone
+		return Type(s)
 	}
 }

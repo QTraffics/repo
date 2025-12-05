@@ -6,6 +6,9 @@ import (
 
 	"github.com/qtraffics/qnetwork/addrs"
 	"github.com/qtraffics/qtfra/ex"
+	"github.com/qtraffics/qtfra/values"
+	"github.com/qtraffics/repo/connects/inbound"
+	"github.com/qtraffics/repo/connects/inbound/directin"
 	"github.com/qtraffics/repo/connects/outbound"
 	"github.com/qtraffics/repo/connects/outbound/directout"
 )
@@ -19,13 +22,13 @@ var (
 )
 
 // Rule
-// <Listen> <Remotes> <OutboundType> <OutboundConf>
+// <InboundConf> <Remotes> <OutboundType> <OutboundConf>
 type Rule struct {
-	Listen  string
-	Remotes []addrs.Socksaddr
+	InboundConf inbound.Conf
+	Remotes     []addrs.Socksaddr
 
-	OutboundType outbound.DialType
-	OutboundConf []outbound.Conf
+	OutboundType outbound.Type
+	OutboundConf outbound.Conf
 }
 
 func ParseRule(ruleString string) (Rule, error) {
@@ -45,7 +48,11 @@ func ParseRule(ruleString string) (Rule, error) {
 		}
 		switch idx {
 		case 0:
-			rule.Listen = field
+			conf, err := directin.NewConfFromString(field)
+			if err != nil {
+				return Rule{}, errSyntax(err.Error())
+			}
+			rule.InboundConf = conf
 		case 1:
 			remotes, err := parseRemotes(field)
 			if err != nil {
@@ -53,16 +60,16 @@ func ParseRule(ruleString string) (Rule, error) {
 			}
 			rule.Remotes = remotes
 		case 2:
-			dialType := outbound.ParseDialType(field)
-			rule.OutboundType = dialType
+			dialType := outbound.ParseTypeString(field)
+			rule.OutboundType = values.UseDefault(dialType, outbound.TypeDirect)
 		case 3:
 			switch rule.OutboundType {
-			case outbound.TypeDirect, outbound.TypeNone:
-				conf, err := directout.NewConfString(field)
+			case outbound.TypeDirect:
+				conf, err := directout.NewConfFromString(field)
 				if err != nil {
 					return Rule{}, errSyntax(err.Error())
 				}
-				rule.OutboundConf = append(rule.OutboundConf, &conf)
+				rule.OutboundConf = conf
 			case outbound.TypeLoadBalance:
 				panic("implement me")
 			case outbound.TypeFallback:
@@ -70,7 +77,7 @@ func ParseRule(ruleString string) (Rule, error) {
 			case outbound.TypeLatencyFirst:
 				panic("implement me")
 			default:
-				panic("unexcepted")
+				return Rule{}, ex.New("unexcepted outbound type: ", rule.OutboundType)
 			}
 		default:
 			break

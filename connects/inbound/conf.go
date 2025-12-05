@@ -1,7 +1,7 @@
 package inbound
 
 type Conf interface {
-	InBoundConf()
+	Type() Type
 
 	String() string
 }

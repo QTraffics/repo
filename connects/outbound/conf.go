@@ -1,7 +1,7 @@
 package outbound
 
 type Conf interface {
-	OutboundConf()
+	Type() Type
 
 	String() string
 }
