@@ -10,11 +10,13 @@ import (
 )
 
 type Outbound struct {
+	Conf
+
 	remote addrs.Socksaddr
 }
 
 func (o *Outbound) Start(ctx context.Context) error {
-	return os.ErrInvalid
+	return nil
 }
 
 func (o *Outbound) Connect(ctx context.Context, network meta.Network) (net.Conn, error) {

@@ -29,6 +29,14 @@ type Conf struct {
 	ReusePort bool
 }
 
+func (c *Conf) Type() inbound.Type {
+	return inbound.TypeDirect
+}
+
+func (c *Conf) String() string {
+	return fmt.Sprint(*c)
+}
+
 func NewConfFromString(confString string) (*Conf, error) {
 	c := new(Conf)
 	if idx := strings.Index(confString, "://"); idx > 0 {
@@ -119,12 +127,4 @@ func (c *Conf) applyPort(port string) error {
 		return ex.New("bad port: ", port)
 	}
 	return nil
-}
-
-func (c *Conf) Type() inbound.Type {
-	return inbound.TypeDirect
-}
-
-func (c *Conf) String() string {
-	return fmt.Sprint(*c)
 }

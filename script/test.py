@@ -11,12 +11,14 @@ logger = logging.getLogger("test")
 
 class GOLintManager:
     def __init__(self,
-                config:str = None,
+                config:str = ".golangci.yaml",
                 go_modules:typing.List[str] = None,
-                lint_command:str = None):
-        self.config = ".golangci.yaml" if len(config) == 0 else config
-        self.go_modules = gomodules.list_go_workspace_module() if len(go_modules) == 0 else go_modules
-        self.lint_command = "golangci-lint" if len(lint_command) == 0 else lint_command
+                lint_command:str = "golangci-lint",
+                 go_command:str = "go"):
+        self.config = config
+        self.go_modules = gomodules.list_go_workspace_module(go_command) if len(go_modules) == 0 else go_modules
+        self.lint_command = lint_command
+        self.go_command= go_command
 
     def lint(self) -> int:
         cp = run.command_shell(f"{self.lint_command} run --config {self.config} {GOLintManager.build_modules_arg(modules=self.go_modules)}")
@@ -24,6 +26,9 @@ class GOLintManager:
 
     def fmt(self) -> int:
         cp = run.command_shell(f"{self.lint_command} fmt --config {self.config} {GOLintManager.build_modules_arg(modules=self.go_modules)}")
+        return cp.returncode
+    def test(self)-> int:
+        cp = run.command_shell(f'{self.go_command} test {GOLintManager.build_modules_arg(modules=self.go_modules)}')
         return cp.returncode
 
     @staticmethod
@@ -40,15 +45,19 @@ def main():
     lm = GOLintManager(config=config_file,go_modules=modules,lint_command=command)
     for do in sys.argv[1:]:
         logger.info(f"found action: {do}")
+        code=0
         match do.lower():
             case "lint":
-                lm.lint()
+                code = lm.lint()
             case "test":
-                pass
+                code = lm.test()
             case "fmt":
-                lm.fmt()
+                code = lm.fmt()
             case _:
                 logger.warning(f"unknown action {do}")
+        if code != 0:
+            logger.warning(f'subprocess quit with code {code}')
+            return
 
 if __name__ == "__main__":
     recipe.configure_logger()

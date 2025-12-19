@@ -10,7 +10,9 @@ import (
 
 var _ inbound.Inbound = (*Inbound)(nil)
 
-type Inbound struct{}
+type Inbound struct {
+	Conf
+}
 
 func (i *Inbound) Start(ctx context.Context) error {
 	// TODO implement me

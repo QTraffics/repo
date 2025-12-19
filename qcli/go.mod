@@ -5,7 +5,7 @@ go 1.25.4
 require (
 	github.com/goccy/go-yaml v1.18.0
 	github.com/qtraffics/qnetwork v0.0.3
-	github.com/qtraffics/qtfra v0.0.7
+	github.com/qtraffics/qtfra v0.0.8
 	github.com/spf13/cobra v1.10.1
 )
 

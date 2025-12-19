@@ -11,5 +11,7 @@ import (
 type Outbound interface {
 	services.LifeCycle
 
+	Type() Type
+
 	Connect(ctx context.Context, network meta.Network) (net.Conn, error)
 }
